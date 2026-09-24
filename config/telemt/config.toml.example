@@ -1,0 +1,33 @@
+[general]
+use_middle_proxy = true
+log_level = "normal"
+
+[general.modes]
+classic = false
+secure = false
+tls = true
+
+[general.links]
+show = "*"
+public_host = "@PUBLIC_HOST@"
+public_port = @TELEMT_PORT@
+
+[server]
+port = 443
+
+[server.api]
+enabled = true
+listen = "127.0.0.1:9091"
+read_only = true
+
+[[server.listeners]]
+ip = "0.0.0.0"
+
+[censorship]
+tls_domain = "@TLS_DOMAIN@"
+mask = true
+tls_emulation = false
+tls_front_dir = "tlsfront"
+
+[access.users]
+owner = "@TELEMT_SECRET@"

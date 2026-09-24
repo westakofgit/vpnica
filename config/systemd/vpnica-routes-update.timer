@@ -1,0 +1,10 @@
+[Unit]
+Description=Nightly vpnica split-tunnel route update
+
+[Timer]
+OnCalendar=*-*-* 04:15:00 Europe/Moscow
+Persistent=true
+AccuracySec=5m
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,7 @@
+.env
+.DS_Store
+backups/
+outputs/
+state/
+config/openvpn/vpn.env
+config/servers/

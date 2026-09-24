@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+
+usage() {
+  cat <<'EOF'
+Использование:
+  vpnica install [--host auto|домен|IPv4] [--restore backup.enc]
+  vpnica host set <домен|IPv4>
+  vpnica export
+  vpnica backup
+  vpnica routes update
+  vpnica routes add <домен|*.домен|IPv4|CIDR>
+  vpnica status
+EOF
+}
+
+command="${1:-}"
+[[ -n "$command" ]] || { usage; exit 1; }
+shift
+
+case "$command" in
+  install)
+    exec "$PROJECT_ROOT/install.sh" "$@"
+    ;;
+  host)
+    [[ "${1:-}" == "set" && $# -eq 2 ]] || { usage; exit 1; }
+    exec "$SCRIPT_DIR/set-host.sh" "$2"
+    ;;
+  export)
+    [[ $# -eq 0 ]] || { usage; exit 1; }
+    exec "$SCRIPT_DIR/export-configs.sh"
+    ;;
+  backup)
+    [[ $# -eq 0 ]] || { usage; exit 1; }
+    exec "$SCRIPT_DIR/backup.sh"
+    ;;
+  routes)
+    subcommand="${1:-}"
+    shift || true
+    case "$subcommand" in
+      update)
+        [[ $# -eq 0 ]] || { usage; exit 1; }
+        exec "$SCRIPT_DIR/routes-update.sh"
+        ;;
+      add)
+        [[ $# -eq 1 ]] || { usage; exit 1; }
+        exec "$SCRIPT_DIR/route-add.sh" "$1"
+        ;;
+      *)
+        usage
+        exit 1
+        ;;
+    esac
+    ;;
+  status)
+    [[ $# -eq 0 ]] || { usage; exit 1; }
+    exec docker compose --project-directory "$PROJECT_ROOT" ps
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+esac
