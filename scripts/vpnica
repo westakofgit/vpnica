@@ -11,6 +11,7 @@ usage() {
   vpnica install [--host auto|домен|IPv4] [--restore backup.enc]
   vpnica host set <домен|IPv4>
   vpnica export
+  vpnica share
   vpnica backup
   vpnica routes update
   vpnica routes add <домен|*.домен|IPv4|CIDR>
@@ -33,6 +34,10 @@ case "$command" in
   export)
     [[ $# -eq 0 ]] || { usage; exit 1; }
     exec "$SCRIPT_DIR/export-configs.sh"
+    ;;
+  share)
+    [[ $# -eq 0 ]] || { usage; exit 1; }
+    exec "$SCRIPT_DIR/share.sh"
     ;;
   backup)
     [[ $# -eq 0 ]] || { usage; exit 1; }

@@ -10,7 +10,7 @@ OUTPUT="$BACKUP_DIR/vpnica-$STAMP.tar.gz.enc"
 umask 077
 mkdir -p "$BACKUP_DIR"
 
-tar -C "$PROJECT_ROOT" -czf - \
+tar -C "$PROJECT_ROOT" --exclude='state/share' -czf - \
   .env \
   config/openvpn/vpn.env \
   config/routes \

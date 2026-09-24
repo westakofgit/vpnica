@@ -151,3 +151,9 @@ echo "vpnica установлена."
 echo "Адрес подключения: $PUBLIC_HOST"
 echo "Профили и QR-код: $OUTPUT_DIR"
 echo "Управление: vpnica help"
+
+if ! "$TARGET_ROOT/scripts/share.sh"; then
+  echo
+  echo "Не удалось создать временную ссылку. Файлы сохранены в: $OUTPUT_DIR" >&2
+  echo "Скачать через SSH: scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR} ./vpnica" >&2
+fi

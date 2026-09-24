@@ -18,7 +18,8 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   jq \
   openssl \
   python3 \
-  qrencode
+  qrencode \
+  zip
 
 install -d -m 0750 /opt/vpnica
 install -m 0644 "$PROJECT_ROOT/config/sysctl/99-vpnica.conf" /etc/sysctl.d/99-vpnica.conf
