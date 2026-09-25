@@ -1,0 +1,13 @@
+[Unit]
+Description=vpnica Docker firewall rules
+After=docker.service ufw.service
+Requires=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/vpnica/scripts/firewall.sh docker-apply
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -13,6 +13,8 @@ usage() {
   vpnica export
   vpnica share
   vpnica backup
+  vpnica firewall apply
+  vpnica firewall status
   vpnica routes update
   vpnica routes add <домен|*.домен|IPv4|CIDR>
   vpnica status
@@ -42,6 +44,20 @@ case "$command" in
   backup)
     [[ $# -eq 0 ]] || { usage; exit 1; }
     exec "$SCRIPT_DIR/backup.sh"
+    ;;
+  firewall)
+    subcommand="${1:-}"
+    shift || true
+    case "$subcommand" in
+      apply|status)
+        [[ $# -eq 0 ]] || { usage; exit 1; }
+        exec "$SCRIPT_DIR/firewall.sh" "$subcommand"
+        ;;
+      *)
+        usage
+        exit 1
+        ;;
+    esac
     ;;
   routes)
     subcommand="${1:-}"

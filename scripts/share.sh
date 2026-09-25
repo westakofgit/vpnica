@@ -151,18 +151,21 @@ UNIT="${UNIT_NAME}.service"
 printf 'TOKEN=%s\nUNIT=%s\nPORT=%s\n' "$TOKEN" "$UNIT" "$PORT" > "$STATE_FILE"
 chmod 600 "$STATE_FILE"
 
+"$SCRIPT_DIR/firewall.sh" share-open "$PORT"
+
 if ! systemd-run \
   --quiet \
   --unit "$UNIT_NAME" \
   --collect \
   --property=Type=exec \
-  /usr/bin/python3 "$SCRIPT_DIR/share-server.py" \
+  "$SCRIPT_DIR/share-session.sh" "$PORT" "$SCRIPT_DIR/share-server.py" \
     --archive "$ARCHIVE" \
     --token "$TOKEN" \
     --port "$PORT" \
     --ttl "$TTL_SECONDS" \
     --max-downloads "$MAX_DOWNLOADS" \
     --state-file "$STATE_FILE"; then
+  "$SCRIPT_DIR/firewall.sh" share-close "$PORT"
   rm -f -- "$ARCHIVE" "$STATE_FILE"
   vpnica_die "Не удалось запустить временный сервер скачивания."
 fi

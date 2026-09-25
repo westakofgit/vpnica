@@ -102,6 +102,7 @@ fi
 vpnica_set_env_value "$TARGET_ROOT/.env" VPNICA_PUBLIC_HOST "$PUBLIC_HOST"
 "$TARGET_ROOT/scripts/init-config.sh"
 "$TARGET_ROOT/scripts/set-host.sh" --offline "$PUBLIC_HOST"
+"$TARGET_ROOT/scripts/firewall.sh" apply
 
 if ! docker inspect vpnica-openvpn >/dev/null 2>&1; then
   if ss -H -lun 'sport = :443' | grep -q .; then

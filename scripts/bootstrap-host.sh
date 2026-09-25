@@ -19,6 +19,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
   openssl \
   python3 \
   qrencode \
+  ufw \
   zip
 
 install -d -m 0750 /opt/vpnica
