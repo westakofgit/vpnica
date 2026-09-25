@@ -35,6 +35,14 @@ touch \
   "$PROJECT_ROOT/config/routes/manual-domains.txt" \
   "$PROJECT_ROOT/config/routes/manual-wildcards.txt"
 
+for route_list in opencck-cidr4 russia-cidr4; do
+  fallback="$PROJECT_ROOT/config/routes/fallback-${route_list}.txt"
+  cache="$PROJECT_ROOT/state/routes/${route_list}.txt"
+  if [[ ! -s "$cache" && -s "$fallback" ]]; then
+    install -m 0644 "$fallback" "$cache"
+  fi
+done
+
 OPENVPN_ENV="$PROJECT_ROOT/config/openvpn/vpn.env"
 if [[ ! -e "$OPENVPN_ENV" ]]; then
   if [[ "$VPNICA_PUBLIC_HOST" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then

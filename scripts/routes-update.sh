@@ -46,15 +46,25 @@ trap 'rm -rf -- "$TEMP_DIR"' EXIT
 
 OPENCCK_FILE="$TEMP_DIR/opencck-cidr4.txt"
 RUSSIA_FILE="$TEMP_DIR/russia-cidr4.txt"
+OPENCCK_CACHE="$CACHE_DIR/opencck-cidr4.txt"
+RUSSIA_CACHE="$CACHE_DIR/russia-cidr4.txt"
 RESOLVED_FILE="$TEMP_DIR/resolved-ipv4.txt"
 WILDCARD_HOSTS_FILE="$TEMP_DIR/wildcard-hosts.txt"
 GENERATED_EXACT_FILE="$TEMP_DIR/family-split-exact"
 GENERATED_RUSSIA_DIRECT_FILE="$TEMP_DIR/family-russia-direct"
 
-curl -fsSL --retry 3 --connect-timeout 15 --max-time 180 \
-  "$IPLIST_URL" -o "$OPENCCK_FILE"
-curl -fsSL --retry 3 --connect-timeout 15 --max-time 180 \
-  "$RUSSIA_IPLIST_URL" -o "$RUSSIA_FILE"
+if ! curl -fsSL --retry 3 --connect-timeout 15 --max-time 180 \
+  "$IPLIST_URL" -o "$OPENCCK_FILE"; then
+  [[ -s "$OPENCCK_CACHE" ]] || exit 1
+  echo "Не удалось обновить OpenCCK; используется сохранённый список." >&2
+  cp -p "$OPENCCK_CACHE" "$OPENCCK_FILE"
+fi
+if ! curl -fsSL --retry 3 --connect-timeout 15 --max-time 180 \
+  "$RUSSIA_IPLIST_URL" -o "$RUSSIA_FILE"; then
+  [[ -s "$RUSSIA_CACHE" ]] || exit 1
+  echo "Не удалось обновить российские сети; используется сохранённый список." >&2
+  cp -p "$RUSSIA_CACHE" "$RUSSIA_FILE"
+fi
 
 : > "$WILDCARD_HOSTS_FILE"
 while IFS= read -r RAW_LINE || [[ -n "$RAW_LINE" ]]; do
@@ -238,8 +248,8 @@ do
   fi
 done
 
-install -m 0644 "$OPENCCK_FILE" "$CACHE_DIR/opencck-cidr4.txt"
-install -m 0644 "$RUSSIA_FILE" "$CACHE_DIR/russia-cidr4.txt"
+install -m 0644 "$OPENCCK_FILE" "$OPENCCK_CACHE"
+install -m 0644 "$RUSSIA_FILE" "$RUSSIA_CACHE"
 
 if [[ "$SERVER_CHANGED" -eq 1 ]]; then
   docker compose \
