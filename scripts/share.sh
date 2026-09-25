@@ -180,6 +180,9 @@ echo
 echo "Скачать готовый комплект в браузере:"
 echo "$DOWNLOAD_URL"
 echo
+echo "Скачать файлы через терминал на своём компьютере:"
+echo "scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR} ./vpnica-outputs"
+echo
 echo "Ссылка работает 30 минут и допускает до 3 успешных скачиваний."
 echo "Это обычный HTTP: не передавайте ссылку посторонним."
 echo "Создать новую ссылку: vpnica share"
