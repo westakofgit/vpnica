@@ -28,7 +28,10 @@ class ShareHandler(BaseHTTPRequestHandler):
         size = self.server.archive.stat().st_size
         self.send_response(200)
         self.send_header("Content-Type", "application/zip")
-        self.send_header("Content-Disposition", 'attachment; filename="vpnica.zip"')
+        self.send_header(
+            "Content-Disposition",
+            f'attachment; filename="{self.server.archive.name}"',
+        )
         self.send_header("Content-Length", str(size))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -73,7 +76,7 @@ def main():
 
     server = ShareHTTPServer(("0.0.0.0", args.port), ShareHandler)
     server.archive = args.archive
-    server.download_path = f"/d/{args.token}/vpnica.zip"
+    server.download_path = f"/d/{args.token}/{args.archive.name}"
     server.timeout = 1
 
     stopping = False

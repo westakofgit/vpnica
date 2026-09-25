@@ -119,7 +119,8 @@ cat > "$BUNDLE_DIR/START-HERE.html" <<EOF
 </html>
 EOF
 
-ARCHIVE="$SHARE_DIR/vpnica.zip"
+ARCHIVE_NAME="vpnica-${PUBLIC_HOST}.zip"
+ARCHIVE="$SHARE_DIR/$ARCHIVE_NAME"
 (
   cd "$BUNDLE_DIR"
   zip -q -r "$ARCHIVE" .
@@ -171,9 +172,9 @@ if ! systemd-run \
 fi
 
 if [[ "$PORT" -eq 80 ]]; then
-  DOWNLOAD_URL="http://${PUBLIC_HOST}/d/${TOKEN}/vpnica.zip"
+  DOWNLOAD_URL="http://${PUBLIC_HOST}/d/${TOKEN}/${ARCHIVE_NAME}"
 else
-  DOWNLOAD_URL="http://${PUBLIC_HOST}:${PORT}/d/${TOKEN}/vpnica.zip"
+  DOWNLOAD_URL="http://${PUBLIC_HOST}:${PORT}/d/${TOKEN}/${ARCHIVE_NAME}"
 fi
 
 echo
@@ -181,7 +182,7 @@ echo "Скачать готовый комплект в браузере:"
 echo "$DOWNLOAD_URL"
 echo
 echo "Скачать файлы через терминал на своём компьютере:"
-echo "scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR} ./vpnica-outputs"
+echo "mkdir -p ./vpnica-outputs/${PUBLIC_HOST} && scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR}/. ./vpnica-outputs/${PUBLIC_HOST}/"
 echo
 echo "Ссылка работает 30 минут и допускает до 3 успешных скачиваний."
 echo "Это обычный HTTP: не передавайте ссылку посторонним."

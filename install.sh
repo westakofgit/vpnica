@@ -156,5 +156,5 @@ echo "Управление: vpnica help"
 if ! "$TARGET_ROOT/scripts/share.sh"; then
   echo
   echo "Не удалось создать временную ссылку. Файлы сохранены в: $OUTPUT_DIR" >&2
-  echo "Скачать через SSH: scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR} ./vpnica" >&2
+  echo "Скачать через SSH: mkdir -p ./vpnica-outputs/${PUBLIC_HOST} && scp -r root@${PUBLIC_HOST}:${OUTPUT_DIR}/. ./vpnica-outputs/${PUBLIC_HOST}/" >&2
 fi

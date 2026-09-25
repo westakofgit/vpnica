@@ -43,10 +43,10 @@ vpnica установлена.
 Адрес подключения: 203.0.113.10
 
 Скачать готовый комплект в браузере:
-http://203.0.113.10/d/длинный-случайный-токен/vpnica.zip
+http://203.0.113.10/d/длинный-случайный-токен/vpnica-203.0.113.10.zip
 
 Скачать файлы через терминал на своём компьютере:
-scp -r root@203.0.113.10:/opt/vpnica/outputs/203.0.113.10 ./vpnica-outputs
+mkdir -p ./vpnica-outputs/203.0.113.10 && scp -r root@203.0.113.10:/opt/vpnica/outputs/203.0.113.10/. ./vpnica-outputs/203.0.113.10/
 
 Ссылка работает 30 минут и допускает до 3 успешных скачиваний.
 ```
@@ -92,7 +92,7 @@ vpnica share
 Их можно забрать по SSH без временной HTTP-ссылки:
 
 ```bash
-scp -r root@IP_СЕРВЕРА:/opt/vpnica/outputs ./vpnica-outputs
+mkdir -p ./vpnica-outputs/IP_СЕРВЕРА && scp -r root@IP_СЕРВЕРА:/opt/vpnica/outputs/IP_СЕРВЕРА/. ./vpnica-outputs/IP_СЕРВЕРА/
 ```
 
 Эту команду нужно выполнять на своём компьютере, а не внутри SSH-сессии сервера.
