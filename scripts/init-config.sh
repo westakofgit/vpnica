@@ -60,6 +60,6 @@ if [[ ! -e "$TELEMT_CONFIG" ]]; then
     -e "s|@TELEMT_SECRET@|$TELEMT_SECRET|g" \
     "$PROJECT_ROOT/config/telemt/config.toml.example" > "$TELEMT_CONFIG"
 fi
-chmod 600 "$TELEMT_CONFIG"
+chmod 644 "$TELEMT_CONFIG"
 
 echo "Конфигурация создана. Существующие ключи и настройки не изменялись."
