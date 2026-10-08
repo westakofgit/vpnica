@@ -22,12 +22,19 @@ PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
   vpnica_die "Некорректный адрес: $VPNICA_PUBLIC_HOST"
 OUTPUT_DIR="$PROJECT_ROOT/outputs/$PUBLIC_HOST"
 TELEMT_CONFIG="$PROJECT_ROOT/state/telemt/config.toml"
-CLIENTS=(family family-split-exact family-russia-direct)
+CLIENTS=(family family-split-exact)
+OUTPUT_NAMES=("ovpn-${PUBLIC_HOST}.ovpn" "ovpn-${PUBLIC_HOST}-split.ovpn")
 
 umask 077
 mkdir -p "$OUTPUT_DIR"
+rm -f -- \
+  "$OUTPUT_DIR/family.ovpn" \
+  "$OUTPUT_DIR/family-split-exact.ovpn" \
+  "$OUTPUT_DIR/family-russia-direct.ovpn"
 
-for client in "${CLIENTS[@]}"; do
+for index in "${!CLIENTS[@]}"; do
+  client="${CLIENTS[$index]}"
+  output_name="${OUTPUT_NAMES[$index]}"
   if ! docker exec vpnica-openvpn test -f "/etc/openvpn/server/easy-rsa/pki/issued/${client}.crt"; then
     vpnica_die "Не найден сертификат OpenVPN-клиента: $client"
   fi
@@ -37,8 +44,8 @@ for client in "${CLIENTS[@]}"; do
   sed -i -E \
     "s|^remote[[:space:]]+[^[:space:]]+[[:space:]]+[0-9]+(.*)$|remote $PUBLIC_HOST $OPENVPN_PORT\\1|" \
     "$temporary"
-  mv "$temporary" "$OUTPUT_DIR/${client}.ovpn"
-  chmod 600 "$OUTPUT_DIR/${client}.ovpn"
+  mv "$temporary" "$OUTPUT_DIR/$output_name"
+  chmod 600 "$OUTPUT_DIR/$output_name"
 done
 
 [[ -f "$TELEMT_CONFIG" ]] || vpnica_die "Конфигурация Telemt не найдена."

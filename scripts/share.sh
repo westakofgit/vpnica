@@ -19,6 +19,8 @@ PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
   vpnica_die "Некорректный адрес: $VPNICA_PUBLIC_HOST"
 
 OUTPUT_DIR="$("$SCRIPT_DIR/export-configs.sh")"
+FULL_PROFILE="ovpn-${PUBLIC_HOST}.ovpn"
+SPLIT_PROFILE="ovpn-${PUBLIC_HOST}-split.ovpn"
 SHARE_DIR="$PROJECT_ROOT/state/share"
 STATE_FILE="$SHARE_DIR/current"
 TTL_SECONDS=1800
@@ -39,9 +41,8 @@ BUNDLE_DIR="$(mktemp -d "$SHARE_DIR/bundle.XXXXXX")"
 trap 'rm -rf -- "$BUNDLE_DIR"' EXIT
 
 for file in \
-  family.ovpn \
-  family-split-exact.ovpn \
-  family-russia-direct.ovpn \
+  "$FULL_PROFILE" \
+  "$SPLIT_PROFILE" \
   telemt-link.txt \
   telemt-https-link.txt \
   telemt-qr.png; do
@@ -56,9 +57,8 @@ cat > "$BUNDLE_DIR/README.txt" <<EOF
 VPNICA — готовый комплект подключения
 
 OpenVPN:
-1. family.ovpn — весь IPv4-трафик через VPN.
-2. family-split-exact.ovpn — через VPN только адреса из обновляемого списка и ручные добавления.
-3. family-russia-direct.ovpn — российские IPv4-сети напрямую, остальной IPv4-трафик через VPN.
+1. $FULL_PROFILE — весь IPv4-трафик через VPN.
+2. $SPLIT_PROFILE — через VPN только адреса из обновляемого списка и ручные добавления.
 
 Импортируйте нужный файл .ovpn в OpenVPN Connect или в ваш роутер.
 
@@ -94,13 +94,10 @@ cat > "$BUNDLE_DIR/START-HERE.html" <<EOF
   <div class="card">
     <h2>OpenVPN</h2>
     <p><strong>Весь трафик через VPN</strong></p>
-    <a class="button" href="family.ovpn" download>Скачать family.ovpn</a>
+    <a class="button" href="$FULL_PROFILE" download>Скачать $FULL_PROFILE</a>
 
     <p><strong>Только адреса из списка через VPN</strong></p>
-    <a class="button" href="family-split-exact.ovpn" download>Скачать split-профиль</a>
-
-    <p><strong>Россия напрямую, остальное через VPN</strong></p>
-    <a class="button" href="family-russia-direct.ovpn" download>Скачать Russia Direct</a>
+    <a class="button" href="$SPLIT_PROFILE" download>Скачать split-профиль</a>
 
     <p>Импортируйте выбранный файл в OpenVPN Connect или в настройках VPN вашего роутера.</p>
   </div>

@@ -135,7 +135,7 @@ if ! grep -Eq '^[[:space:]]*duplicate-cn([[:space:]]|$)' "$SERVER_CONFIG"; then
   printf '\nduplicate-cn\n' >> "$SERVER_CONFIG"
 fi
 
-for client in family family-split-exact family-russia-direct; do
+for client in family family-split-exact; do
   if ! docker exec vpnica-openvpn test -f "/etc/openvpn/server/easy-rsa/pki/issued/${client}.crt"; then
     docker exec vpnica-openvpn ovpn_manage --addclient "$client"
   fi
