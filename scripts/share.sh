@@ -19,8 +19,8 @@ PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
   vpnica_die "Некорректный адрес: $VPNICA_PUBLIC_HOST"
 
 OUTPUT_DIR="$("$SCRIPT_DIR/export-configs.sh")"
-FULL_PROFILE="ovpn-${PUBLIC_HOST}.ovpn"
-SPLIT_PROFILE="ovpn-${PUBLIC_HOST}-split.ovpn"
+FULL_PROFILE="${PUBLIC_HOST}-ovpn.ovpn"
+SPLIT_PROFILE="${PUBLIC_HOST}-ovpn-split.ovpn"
 SHARE_DIR="$PROJECT_ROOT/state/share"
 STATE_FILE="$SHARE_DIR/current"
 TTL_SECONDS=1800
@@ -43,7 +43,6 @@ trap 'rm -rf -- "$BUNDLE_DIR"' EXIT
 for file in \
   "$FULL_PROFILE" \
   "$SPLIT_PROFILE" \
-  telemt-link.txt \
   telemt-https-link.txt \
   telemt-qr.png; do
   [[ -f "$OUTPUT_DIR/$file" ]] || vpnica_die "Не найден файл: $OUTPUT_DIR/$file"

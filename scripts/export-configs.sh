@@ -23,14 +23,16 @@ PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
 OUTPUT_DIR="$PROJECT_ROOT/outputs/$PUBLIC_HOST"
 TELEMT_CONFIG="$PROJECT_ROOT/state/telemt/config.toml"
 CLIENTS=(family family-split-exact)
-OUTPUT_NAMES=("ovpn-${PUBLIC_HOST}.ovpn" "ovpn-${PUBLIC_HOST}-split.ovpn")
+OUTPUT_NAMES=("${PUBLIC_HOST}-ovpn.ovpn" "${PUBLIC_HOST}-ovpn-split.ovpn")
 
 umask 077
 mkdir -p "$OUTPUT_DIR"
 rm -f -- \
   "$OUTPUT_DIR/family.ovpn" \
   "$OUTPUT_DIR/family-split-exact.ovpn" \
-  "$OUTPUT_DIR/family-russia-direct.ovpn"
+  "$OUTPUT_DIR/family-russia-direct.ovpn" \
+  "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}.ovpn" \
+  "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}-split.ovpn"
 
 for index in "${!CLIENTS[@]}"; do
   client="${CLIENTS[$index]}"
@@ -58,12 +60,11 @@ TLS_DOMAIN="$(sed -nE 's/^[[:space:]]*tls_domain[[:space:]]*=[[:space:]]*"([^"]+
 
 TLS_DOMAIN_HEX="$(printf '%s' "$TLS_DOMAIN" | od -An -tx1 | tr -d ' \n')"
 TELEMT_SECRET_URL="ee${TELEMT_SECRET,,}${TLS_DOMAIN_HEX}"
-TG_LINK="tg://proxy?server=${PUBLIC_HOST}&port=${TELEMT_PORT}&secret=${TELEMT_SECRET_URL}"
 HTTPS_LINK="https://t.me/proxy?server=${PUBLIC_HOST}&port=${TELEMT_PORT}&secret=${TELEMT_SECRET_URL}"
 
-printf '%s\n' "$TG_LINK" > "$OUTPUT_DIR/telemt-link.txt"
+rm -f -- "$OUTPUT_DIR/telemt-link.txt"
 printf '%s\n' "$HTTPS_LINK" > "$OUTPUT_DIR/telemt-https-link.txt"
-qrencode -o "$OUTPUT_DIR/telemt-qr.png" -s 8 -m 4 "$TG_LINK"
+qrencode -o "$OUTPUT_DIR/telemt-qr.png" -s 8 -m 4 "$HTTPS_LINK"
 chmod 600 "$OUTPUT_DIR"/*
 
 echo "$OUTPUT_DIR"
