@@ -4,4 +4,6 @@ backups/
 outputs/
 state/
 config/openvpn/vpn.env
+config/openvpn/vpn-tcp.env
+config/openvpn/server-tcp.conf
 config/servers/

@@ -21,6 +21,8 @@ PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
 OUTPUT_DIR="$("$SCRIPT_DIR/export-configs.sh")"
 FULL_PROFILE="${PUBLIC_HOST}-ovpn.ovpn"
 SPLIT_PROFILE="${PUBLIC_HOST}-ovpn-split.ovpn"
+TCP_FULL_PROFILE="${PUBLIC_HOST}-ovpn-tcp.ovpn"
+TCP_SPLIT_PROFILE="${PUBLIC_HOST}-ovpn-split-tcp.ovpn"
 SHARE_DIR="$PROJECT_ROOT/state/share"
 STATE_FILE="$SHARE_DIR/current"
 TTL_SECONDS=1800
@@ -43,6 +45,8 @@ trap 'rm -rf -- "$BUNDLE_DIR"' EXIT
 for file in \
   "$FULL_PROFILE" \
   "$SPLIT_PROFILE" \
+  "$TCP_FULL_PROFILE" \
+  "$TCP_SPLIT_PROFILE" \
   telemt-https-link.txt \
   telemt-qr.png; do
   [[ -f "$OUTPUT_DIR/$file" ]] || vpnica_die "Не найден файл: $OUTPUT_DIR/$file"
@@ -56,10 +60,13 @@ cat > "$BUNDLE_DIR/README.txt" <<EOF
 VPNICA — готовый комплект подключения
 
 OpenVPN:
-1. $FULL_PROFILE — весь IPv4-трафик через VPN.
-2. $SPLIT_PROFILE — через VPN только адреса из обновляемого списка и ручные добавления.
+1. $FULL_PROFILE — весь IPv4-трафик через VPN по UDP.
+2. $SPLIT_PROFILE — адреса из списка через VPN по UDP.
+3. $TCP_FULL_PROFILE — весь IPv4-трафик через VPN по TCP/443.
+4. $TCP_SPLIT_PROFILE — адреса из списка через VPN по TCP/443.
 
-Импортируйте нужный файл .ovpn в OpenVPN Connect или в ваш роутер.
+Сначала попробуйте UDP-профиль. Если VPN подключается, но интернет не работает,
+используйте соответствующий профиль с суффиксом -tcp.
 
 Telegram-прокси Telemt:
 $TELEMT_LINK
@@ -93,12 +100,14 @@ cat > "$BUNDLE_DIR/START-HERE.html" <<EOF
   <div class="card">
     <h2>OpenVPN</h2>
     <p><strong>Весь трафик через VPN</strong></p>
-    <a class="button" href="$FULL_PROFILE" download>Скачать $FULL_PROFILE</a>
+    <a class="button" href="$FULL_PROFILE" download>UDP</a>
+    <a class="button" href="$TCP_FULL_PROFILE" download>TCP/443</a>
 
     <p><strong>Только адреса из списка через VPN</strong></p>
-    <a class="button" href="$SPLIT_PROFILE" download>Скачать split-профиль</a>
+    <a class="button" href="$SPLIT_PROFILE" download>UDP split</a>
+    <a class="button" href="$TCP_SPLIT_PROFILE" download>TCP/443 split</a>
 
-    <p>Импортируйте выбранный файл в OpenVPN Connect или в настройках VPN вашего роутера.</p>
+    <p>Сначала используйте UDP. Если подключение устанавливается, но сайты не открываются, импортируйте соответствующий TCP/443-профиль.</p>
   </div>
 
   <div class="card">

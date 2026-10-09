@@ -16,8 +16,11 @@ load_service_ports() {
   [[ -f "$env_file" ]] || vpnica_die "Файл $env_file не найден."
 
   OPENVPN_PORT="$(sed -nE 's/^OPENVPN_PORT=([0-9]+)$/\1/p' "$env_file" | head -n 1)"
+  OPENVPN_TCP_PORT="$(sed -nE 's/^OPENVPN_TCP_PORT=([0-9]+)$/\1/p' "$env_file" | head -n 1)"
   TELEMT_PORT="$(sed -nE 's/^TELEMT_PORT=([0-9]+)$/\1/p' "$env_file" | head -n 1)"
+  [[ -n "$OPENVPN_TCP_PORT" ]] || OPENVPN_TCP_PORT=443
   validate_port "$OPENVPN_PORT" || vpnica_die "Некорректный OPENVPN_PORT."
+  validate_port "$OPENVPN_TCP_PORT" || vpnica_die "Некорректный OPENVPN_TCP_PORT."
   validate_port "$TELEMT_PORT" || vpnica_die "Некорректный TELEMT_PORT."
 }
 
@@ -55,6 +58,7 @@ apply_host_firewall() {
   done <<< "$ports"
 
   ufw allow "$TELEMT_PORT/tcp" comment 'vpnica Telemt' >/dev/null
+  ufw allow "$OPENVPN_TCP_PORT/tcp" comment 'vpnica OpenVPN TCP' >/dev/null
   ufw allow "$OPENVPN_PORT/udp" comment 'vpnica OpenVPN' >/dev/null
   ufw --force enable >/dev/null
 }
@@ -74,6 +78,7 @@ apply_docker_rules_for() {
   "$tool" -A VPNICA-DOCKER -i docker0 -j RETURN
   "$tool" -A VPNICA-DOCKER -i 'br+' -j RETURN
   "$tool" -A VPNICA-DOCKER -p tcp -m conntrack --ctorigdstport "$TELEMT_PORT" -j RETURN
+  "$tool" -A VPNICA-DOCKER -p tcp -m conntrack --ctorigdstport "$OPENVPN_TCP_PORT" -j RETURN
   "$tool" -A VPNICA-DOCKER -p udp -m conntrack --ctorigdstport "$OPENVPN_PORT" -j RETURN
   "$tool" -A VPNICA-DOCKER -o docker0 -j DROP
   "$tool" -A VPNICA-DOCKER -o 'br+' -j DROP

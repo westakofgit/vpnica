@@ -24,6 +24,30 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  openvpn-tcp:
+    image: ${OPENVPN_IMAGE}
+    container_name: vpnica-openvpn-tcp
+    restart: unless-stopped
+    ports:
+      - "${OPENVPN_TCP_PORT}:${OPENVPN_TCP_PORT}/tcp"
+    volumes:
+      - ./state/openvpn:/etc/openvpn
+      - ./config/openvpn/vpn-tcp.env:/vpn.env:ro
+      - ./config/openvpn/server-tcp.conf:/etc/openvpn/server/server.conf:ro
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    sysctls:
+      - net.ipv4.ip_forward=1
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   telemt:
     image: ${TELEMT_IMAGE}
     container_name: vpnica-telemt
