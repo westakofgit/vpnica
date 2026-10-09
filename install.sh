@@ -128,12 +128,35 @@ done
 [[ "$openvpn_ready" -eq 1 ]] || vpnica_die "OpenVPN не успел подготовить PKI."
 
 SERVER_CONFIG="$TARGET_ROOT/state/openvpn/server/server.conf"
+set -a
+source "$TARGET_ROOT/.env"
+set +a
+: "${OPENVPN_TUN_MTU:=1300}"
+: "${OPENVPN_MSSFIX:=1250}"
+OPENVPN_CONFIG_CHANGED=0
+
 if ! grep -Eq '^[[:space:]]*duplicate-cn([[:space:]]|$)' "$SERVER_CONFIG"; then
   if [[ ! -e "$SERVER_CONFIG.pre-family-profile" ]]; then
     cp -p "$SERVER_CONFIG" "$SERVER_CONFIG.pre-family-profile"
   fi
   printf '\nduplicate-cn\n' >> "$SERVER_CONFIG"
+  OPENVPN_CONFIG_CHANGED=1
 fi
+
+for option in \
+  "tun-mtu $OPENVPN_TUN_MTU" \
+  "mssfix $OPENVPN_MSSFIX"
+do
+  name="${option%% *}"
+  if grep -Fxq "$option" "$SERVER_CONFIG"; then
+    continue
+  elif grep -Eq "^[[:space:]]*${name}[[:space:]]+" "$SERVER_CONFIG"; then
+    sed -i -E "s|^[[:space:]]*${name}[[:space:]]+.*$|${option}|" "$SERVER_CONFIG"
+  else
+    printf '%s\n' "$option" >> "$SERVER_CONFIG"
+  fi
+  OPENVPN_CONFIG_CHANGED=1
+done
 
 for client in family family-split-exact; do
   if ! docker exec vpnica-openvpn test -f "/etc/openvpn/server/easy-rsa/pki/issued/${client}.crt"; then
@@ -142,6 +165,9 @@ for client in family family-split-exact; do
 done
 
 "$TARGET_ROOT/scripts/routes-update.sh"
+if [[ "$OPENVPN_CONFIG_CHANGED" -eq 1 ]]; then
+  docker compose --project-directory "$TARGET_ROOT" restart openvpn
+fi
 "$TARGET_ROOT/scripts/install-route-timer.sh"
 OUTPUT_DIR="$("$TARGET_ROOT/scripts/export-configs.sh")"
 

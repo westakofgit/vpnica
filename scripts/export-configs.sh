@@ -16,6 +16,8 @@ set +a
 
 : "${VPNICA_PUBLIC_HOST:?VPNICA_PUBLIC_HOST is required}"
 : "${OPENVPN_PORT:?OPENVPN_PORT is required}"
+: "${OPENVPN_TUN_MTU:=1300}"
+: "${OPENVPN_MSSFIX:=1250}"
 : "${TELEMT_PORT:?TELEMT_PORT is required}"
 
 PUBLIC_HOST="$(vpnica_validate_host "$VPNICA_PUBLIC_HOST")" || \
@@ -46,6 +48,8 @@ for index in "${!CLIENTS[@]}"; do
   sed -i -E \
     "s|^remote[[:space:]]+[^[:space:]]+[[:space:]]+[0-9]+(.*)$|remote $PUBLIC_HOST $OPENVPN_PORT\\1|" \
     "$temporary"
+  sed -i -E '/^(tun-mtu|mssfix)[[:space:]]+/d' "$temporary"
+  sed -i "/^<ca>$/i tun-mtu $OPENVPN_TUN_MTU\nmssfix $OPENVPN_MSSFIX" "$temporary"
   mv "$temporary" "$OUTPUT_DIR/$output_name"
   chmod 600 "$OUTPUT_DIR/$output_name"
 done
