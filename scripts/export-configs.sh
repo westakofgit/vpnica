@@ -16,7 +16,6 @@ set +a
 
 : "${VPNICA_PUBLIC_HOST:?VPNICA_PUBLIC_HOST is required}"
 : "${OPENVPN_PORT:?OPENVPN_PORT is required}"
-: "${OPENVPN_TCP_PORT:=443}"
 : "${OPENVPN_TUN_MTU:=1300}"
 : "${OPENVPN_MSSFIX:=1250}"
 : "${TELEMT_PORT:?TELEMT_PORT is required}"
@@ -27,7 +26,6 @@ OUTPUT_DIR="$PROJECT_ROOT/outputs/$PUBLIC_HOST"
 TELEMT_CONFIG="$PROJECT_ROOT/state/telemt/config.toml"
 CLIENTS=(family family-split-exact)
 OUTPUT_NAMES=("${PUBLIC_HOST}-ovpn.ovpn" "${PUBLIC_HOST}-ovpn-split.ovpn")
-TCP_OUTPUT_NAMES=("${PUBLIC_HOST}-ovpn-tcp.ovpn" "${PUBLIC_HOST}-ovpn-split-tcp.ovpn")
 
 umask 077
 mkdir -p "$OUTPUT_DIR"
@@ -38,7 +36,9 @@ rm -f -- \
   "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}.ovpn" \
   "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}-split.ovpn" \
   "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}-tcp.ovpn" \
-  "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}-split-tcp.ovpn"
+  "$OUTPUT_DIR/ovpn-${PUBLIC_HOST}-split-tcp.ovpn" \
+  "$OUTPUT_DIR/${PUBLIC_HOST}-ovpn-tcp.ovpn" \
+  "$OUTPUT_DIR/${PUBLIC_HOST}-ovpn-split-tcp.ovpn"
 
 for index in "${!CLIENTS[@]}"; do
   client="${CLIENTS[$index]}"
@@ -57,13 +57,6 @@ for index in "${!CLIENTS[@]}"; do
   mv "$temporary" "$OUTPUT_DIR/$output_name"
   chmod 600 "$OUTPUT_DIR/$output_name"
 
-  tcp_output_name="${TCP_OUTPUT_NAMES[$index]}"
-  cp "$OUTPUT_DIR/$output_name" "$OUTPUT_DIR/$tcp_output_name"
-  sed -i -E \
-    -e 's|^proto[[:space:]]+.*$|proto tcp-client|' \
-    -e "s|^remote[[:space:]]+[^[:space:]]+[[:space:]]+[0-9]+(.*)$|remote $PUBLIC_HOST $OPENVPN_TCP_PORT\1|" \
-    "$OUTPUT_DIR/$tcp_output_name"
-  chmod 600 "$OUTPUT_DIR/$tcp_output_name"
 done
 
 [[ -f "$TELEMT_CONFIG" ]] || vpnica_die "Конфигурация Telemt не найдена."

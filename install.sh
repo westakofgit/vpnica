@@ -100,15 +100,24 @@ else
 fi
 
 vpnica_set_env_value "$TARGET_ROOT/.env" VPNICA_PUBLIC_HOST "$PUBLIC_HOST"
+vpnica_set_env_value "$TARGET_ROOT/.env" TELEMT_PORT 443
+sed -i -E '/^OPENVPN_TCP_PORT=/d' "$TARGET_ROOT/.env"
 "$TARGET_ROOT/scripts/init-config.sh"
 "$TARGET_ROOT/scripts/set-host.sh" --offline "$PUBLIC_HOST"
+sed -i -E \
+  's|^[[:space:]]*public_port[[:space:]]*=.*$|public_port = 443|' \
+  "$TARGET_ROOT/state/telemt/config.toml"
+
+if docker inspect vpnica-openvpn-tcp >/dev/null 2>&1; then
+  docker rm -f vpnica-openvpn-tcp >/dev/null
+fi
+if command -v ufw >/dev/null 2>&1; then
+  ufw --force delete allow 8443/tcp >/dev/null 2>&1 || true
+fi
 
 set -a
 source "$TARGET_ROOT/.env"
 set +a
-: "${OPENVPN_TCP_PORT:=443}"
-[[ "$OPENVPN_TCP_PORT" != "$TELEMT_PORT" ]] || \
-  vpnica_die "OPENVPN_TCP_PORT и TELEMT_PORT должны отличаться."
 
 "$TARGET_ROOT/scripts/firewall.sh" apply
 
@@ -117,18 +126,13 @@ if ! docker inspect vpnica-openvpn >/dev/null 2>&1; then
     vpnica_die "UDP/$OPENVPN_PORT уже занят другим процессом."
   fi
 fi
-if ! docker inspect vpnica-openvpn-tcp >/dev/null 2>&1; then
-  if ss -H -ltn "sport = :$OPENVPN_TCP_PORT" | grep -q .; then
-    vpnica_die "TCP/$OPENVPN_TCP_PORT уже занят другим процессом."
-  fi
-fi
 if ! docker inspect vpnica-telemt >/dev/null 2>&1; then
   if ss -H -ltn "sport = :$TELEMT_PORT" | grep -q .; then
     vpnica_die "TCP/$TELEMT_PORT уже занят другим процессом."
   fi
 fi
 
-docker compose --project-directory "$TARGET_ROOT" up -d openvpn telemt
+docker compose --project-directory "$TARGET_ROOT" up -d --remove-orphans openvpn telemt
 
 openvpn_ready=0
 for _ in $(seq 1 60); do
@@ -181,8 +185,6 @@ done
 if [[ "$OPENVPN_CONFIG_CHANGED" -eq 1 ]]; then
   docker compose --project-directory "$TARGET_ROOT" restart openvpn
 fi
-"$TARGET_ROOT/scripts/configure-openvpn-tcp.sh"
-docker compose --project-directory "$TARGET_ROOT" up -d openvpn-tcp
 "$TARGET_ROOT/scripts/install-route-timer.sh"
 OUTPUT_DIR="$("$TARGET_ROOT/scripts/export-configs.sh")"
 

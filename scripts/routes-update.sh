@@ -252,16 +252,11 @@ install -m 0644 "$OPENCCK_FILE" "$OPENCCK_CACHE"
 install -m 0644 "$RUSSIA_FILE" "$RUSSIA_CACHE"
 
 if [[ "$SERVER_CHANGED" -eq 1 ]]; then
-  OPENVPN_SERVICES=(openvpn)
-  if docker inspect vpnica-openvpn-tcp >/dev/null 2>&1; then
-    "$SCRIPT_DIR/configure-openvpn-tcp.sh"
-    OPENVPN_SERVICES+=(openvpn-tcp)
-  fi
   docker compose \
     --project-directory "$PROJECT_ROOT" \
     --env-file "$ENV_FILE" \
     -f "$PROJECT_ROOT/compose.yaml" \
-    restart "${OPENVPN_SERVICES[@]}"
+    restart openvpn
   echo "Маршруты обновлены; OpenVPN-клиенты переподключаются."
 else
   echo "Маршруты не изменились."
