@@ -1,1 +1,3 @@
 # Один домен на строку, без протокола и пути.
+updates.folivora.ai
+bttreleases.llo.ai
